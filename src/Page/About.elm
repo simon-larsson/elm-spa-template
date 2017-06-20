@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (href)
 import View.Page as Page
 import Page.Error as Error exposing (PageLoadError, pageLoadError)
+import Task exposing (Task)
 
 
 ---- MODEL ----
@@ -15,20 +16,22 @@ type alias Model =
     }
 
 
-init : Model
+init : Task PageLoadError Model
 init =
     let
+        -- Load page - Perform tasks to load the resources of a page
         title =
-            "About Page"
+            Task.succeed "About Page"
 
         body =
-            "This is the page where you can read about the about page!"
+            Task.succeed "Welcome to the page where you can read all about the about page!"
 
         handleLoadError _ =
-            -- Used only if page loading can fail, Tasks using HTTP and such
-            Error.pageLoadError Page.Home "About is currently unavailable."
+            -- If a resource task fail load error page
+            Error.pageLoadError Page.Home "Aboutpage is currently unavailable."
     in
-        Model title body
+        Task.map2 Model title body
+            |> Task.mapError handleLoadError
 
 
 

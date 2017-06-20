@@ -1,14 +1,12 @@
 module Main exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Http
 import Navigation exposing (Location)
 import Json.Decode as Decode exposing (Value)
+import Page.Error as Error exposing (PageLoadError)
+import Page.NotFound as NotFound
 import Page.Home as Home
 import Page.About as About
-import Page.Error as Error exposing (PageLoadError)
 import View.Page as Page exposing (ActivePage)
 import Route exposing (..)
 import Task
@@ -45,7 +43,7 @@ type Msg
     | HomeLoaded (Result PageLoadError Home.Model)
     | HomeMsg Home.Msg
     | AboutLoaded (Result PageLoadError About.Model)
-    | AboutMsg About.Msg
+    | AboutMsg Home.Msg
 
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -99,7 +97,44 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [] [ text "hello girl" ]
+    case model.pageState of
+        Loaded page ->
+            viewPage False page
+
+        TransitioningFrom page ->
+            viewPage True page
+
+
+viewPage : Bool -> Page -> Html Msg
+viewPage isLoading page =
+    let
+        layout =
+            Page.layout isLoading
+    in
+        case page of
+            NotFound ->
+                NotFound.view
+                    |> layout Page.Other
+
+            Blank ->
+                -- This is for the very intial page load, while we are loading
+                -- data via HTTP. We could also render a spinner here.
+                Html.text ""
+                    |> layout Page.Other
+
+            Error subModel ->
+                Error.view subModel
+                    |> layout Page.Other
+
+            Home subModel ->
+                Home.view subModel
+                    |> layout Page.Home
+                    |> Html.map HomeMsg
+
+            About subModel ->
+                Home.view subModel
+                    |> layout Page.About
+                    |> Html.map AboutMsg
 
 
 
