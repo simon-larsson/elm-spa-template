@@ -43,7 +43,7 @@ type Msg
     | HomeLoaded (Result PageLoadError Home.Model)
     | HomeMsg Home.Msg
     | AboutLoaded (Result PageLoadError About.Model)
-    | AboutMsg Home.Msg
+    | AboutMsg About.Msg
 
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -88,7 +88,54 @@ pageError model activePage errorMessage =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    updatePage (getPage model.pageState) msg model
+
+
+updatePage : Page -> Msg -> Model -> ( Model, Cmd Msg )
+updatePage page msg model =
+    let
+        toPage toModel toMsg subUpdate subMsg subModel =
+            let
+                ( newModel, newCmd ) =
+                    subUpdate subMsg subModel
+            in
+                ( { model | pageState = Loaded (toModel newModel) }, Cmd.map toMsg newCmd )
+
+        error =
+            pageError model
+    in
+        case ( msg, page ) of
+            -- Update for page transitions
+            ( SetRoute route, _ ) ->
+                setRoute route model
+
+            ( HomeLoaded (Ok subModel), _ ) ->
+                { model | pageState = Loaded (Home subModel) } => Cmd.none
+
+            ( HomeLoaded (Err error), _ ) ->
+                { model | pageState = Loaded (Error error) } => Cmd.none
+
+            ( AboutLoaded (Ok subModel), _ ) ->
+                { model | pageState = Loaded (About subModel) } => Cmd.none
+
+            ( AboutLoaded (Err error), _ ) ->
+                { model | pageState = Loaded (Error error) } => Cmd.none
+
+            -- Update for page specfic msgs
+            ( HomeMsg subMsg, Home subModel ) ->
+                toPage Home HomeMsg (Home.update) subMsg subModel
+
+            ( AboutMsg subMsg, About subModel ) ->
+                toPage About AboutMsg (About.update) subMsg subModel
+
+            ( _, NotFound ) ->
+                -- Disregard incoming messages when we're on the
+                -- NotFound page.
+                model => Cmd.none
+
+            ( _, _ ) ->
+                -- Disregard incoming messages that arrived for the wrong page
+                model => Cmd.none
 
 
 
@@ -113,8 +160,7 @@ viewPage isLoading page =
     in
         case page of
             NotFound ->
-                NotFound.view
-                    |> layout Page.Other
+                layout Page.Other NotFound.view
 
             Blank ->
                 -- This is for the very intial page load, while we are loading
@@ -134,7 +180,7 @@ viewPage isLoading page =
             About subModel ->
                 Home.view subModel
                     |> layout Page.About
-                    |> Html.map AboutMsg
+                    |> (Html.map HomeMsg)
 
 
 

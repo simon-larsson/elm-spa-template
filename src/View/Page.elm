@@ -24,7 +24,7 @@ layout : Bool -> ActivePage -> Html msg -> Html msg
 layout isLoading page content =
     div []
         [ viewHeader page isLoading
-        , content
+        , div [] [ content ]
         , viewFooter
         ]
 
@@ -33,7 +33,7 @@ viewHeader : ActivePage -> Bool -> Html msg
 viewHeader page isLoading =
     nav []
         [ div []
-            [ text "Template header"
+            [ text "Template navbar: "
             , a [ Route.href Route.Home ]
                 [ text "Home" ]
             , a [ Route.href Route.About ]
