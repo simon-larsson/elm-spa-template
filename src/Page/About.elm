@@ -1,7 +1,6 @@
 module Page.About exposing (view, update, Model, Msg, init)
 
 import Html exposing (..)
-import Html.Attributes exposing (href)
 import View.Page as Page
 import Page.Error as Error exposing (PageLoadError, pageLoadError)
 import Task exposing (Task)
@@ -56,6 +55,6 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ h1 [] [ text model.pageTitle ]
+        [ h2 [] [ text model.pageTitle ]
         , div [] [ text model.pageBody ]
         ]

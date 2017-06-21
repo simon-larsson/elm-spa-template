@@ -178,9 +178,9 @@ viewPage isLoading page =
                     |> Html.map HomeMsg
 
             About subModel ->
-                Home.view subModel
+                About.view subModel
                     |> layout Page.About
-                    |> (Html.map HomeMsg)
+                    |> Html.map AboutMsg
 
 
 
