@@ -14,8 +14,8 @@ type Route
     | About
 
 
-routeMather : Parser (Route -> a) a
-routeMather =
+routeMatcher : Parser (Route -> a) a
+routeMatcher =
     oneOf
         [ Url.map Home (s "")
         , Url.map About (s "about")
@@ -41,8 +41,8 @@ routeToString page =
                     [ "about" ]
 
         --    When needing parameters on the form base/item/3
-        --                    Item ->
-        --                    [ "item", Item.itemToString item ]
+        --                    Item slug ->
+        --                    [ "item", Item.slugToString slug ]
     in
         "#/" ++ (String.join "/" pagePath)
 
@@ -66,4 +66,4 @@ fromLocation location =
     if String.isEmpty location.hash then
         Just Home
     else
-        parseHash routeMather location
+        parseHash routeMatcher location
