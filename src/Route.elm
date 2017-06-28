@@ -14,6 +14,11 @@ type Route
     | About
 
 
+
+--    When needing parameters on the form base/item/3
+--   | Item Int
+
+
 routeMatcher : Parser (Route -> a) a
 routeMatcher =
     oneOf
@@ -21,7 +26,7 @@ routeMatcher =
         , Url.map About (s "about")
 
         --    When needing parameters on the form base/item/3
-        --    , Url.map Item (s "item" </> Item.itemParser)
+        --    , Url.map Item (s "item" </> 3)
         ]
 
 
@@ -41,8 +46,8 @@ routeToString page =
                     [ "about" ]
 
         --    When needing parameters on the form base/item/3
-        --                    Item slug ->
-        --                    [ "item", Item.slugToString slug ]
+        --                    Item id ->
+        --                    [ "item",  id ]
     in
         "#/" ++ (String.join "/" pagePath)
 
