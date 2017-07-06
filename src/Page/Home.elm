@@ -1,9 +1,6 @@
 module Page.Home exposing (view, update, Model, Msg, init)
 
 import Html exposing (..)
-import View.Page as Page
-import Page.Error as Error exposing (PageLoadError, pageLoadError)
-import Task exposing (Task)
 
 
 ---- MODEL ----
@@ -15,22 +12,9 @@ type alias Model =
     }
 
 
-init : Task PageLoadError Model
+init : Model
 init =
-    let
-        -- Load page - Perform tasks to load the resources of a page
-        title =
-            Task.succeed "Home Page"
-
-        body =
-            Task.succeed "Welcome to the homepage!"
-
-        handleLoadError _ =
-            -- If a resource task fail load error page
-            Error.pageLoadError Page.Home "The homepage is currently unavailable."
-    in
-        Task.map2 Model title body
-            |> Task.mapError handleLoadError
+    Model "Home" "This is the homepage"
 
 
 

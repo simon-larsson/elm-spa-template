@@ -15,8 +15,8 @@ type Route
 
 
 
---    When needing parameters on the form base/item/3
---   | Item Int
+--    When needing parameters on the form base/item/id
+--   | Item String
 
 
 routeMatcher : Parser (Route -> a) a
@@ -26,7 +26,7 @@ routeMatcher =
         , Url.map About (s "about")
 
         --    When needing parameters on the form base/item/3
-        --    , Url.map Item (s "item" </> 3)
+        --    , Url.map Item (s "item" </> string)
         ]
 
 

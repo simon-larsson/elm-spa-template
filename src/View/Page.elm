@@ -15,17 +15,17 @@ type ActivePage
 isLoading can be used to slow loading during slow transitions
 
 -}
-layout : Bool -> ActivePage -> Html msg -> Html msg
-layout isLoading page content =
+layout : ActivePage -> Html msg -> Html msg
+layout page content =
     div []
-        [ viewHeader page isLoading
+        [ viewHeader page
         , div [] [ content ]
         , viewFooter
         ]
 
 
-viewHeader : ActivePage -> Bool -> Html msg
-viewHeader page isLoading =
+viewHeader : ActivePage -> Html msg
+viewHeader page =
     nav []
         [ div []
             [ a [ Route.href Route.Home ]

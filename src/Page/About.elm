@@ -1,9 +1,6 @@
 module Page.About exposing (view, update, Model, Msg, init)
 
 import Html exposing (..)
-import View.Page as Page
-import Page.Error as Error exposing (PageLoadError, pageLoadError)
-import Task exposing (Task)
 
 
 ---- MODEL ----
@@ -15,22 +12,9 @@ type alias Model =
     }
 
 
-init : Task PageLoadError Model
+init : Model
 init =
-    let
-        -- Load page - Perform tasks to load the resources of a page
-        title =
-            Task.succeed "About Page"
-
-        body =
-            Task.succeed "About page is the page where you can read all about the about page!"
-
-        handleLoadError _ =
-            -- If a resource task fail load error page
-            Error.pageLoadError Page.Home "The about page is currently unavailable."
-    in
-        Task.map2 Model title body
-            |> Task.mapError handleLoadError
+    Model "About" "This is the aboutpage"
 
 
 

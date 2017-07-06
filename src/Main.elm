@@ -9,7 +9,6 @@ import Page.Home as Home
 import Page.About as About
 import View.Page as Page exposing (ActivePage)
 import Route exposing (..)
-import Task
 import Util exposing ((=>))
 
 
@@ -17,7 +16,7 @@ import Util exposing ((=>))
 
 
 type alias Model =
-    { pageState : PageState
+    { page : Page
     }
 
 
@@ -29,66 +28,33 @@ type Page
     | About About.Model
 
 
-type PageState
-    = Loaded Page
-    | TransitioningFrom Page
-
-
 
 ---- UPDATE ----
 
 
 type Msg
     = SetRoute (Maybe Route)
-    | HomeLoaded (Result PageLoadError Home.Model)
     | HomeMsg Home.Msg
-    | AboutLoaded (Result PageLoadError About.Model)
     | AboutMsg About.Msg
 
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
-setRoute maybeRoute model =
-    let
-        transition toMsg task =
-            { model | pageState = TransitioningFrom (getPage model.pageState) }
-                => Task.attempt toMsg task
+setRoute route model =
+    case route of
+        Nothing ->
+            -- TODO Load 404 page not found
+            ( model, Cmd.none )
 
-        error =
-            pageError model
-    in
-        case maybeRoute of
-            Nothing ->
-                { model | pageState = Loaded NotFound } => Cmd.none
+        Just Route.Home ->
+            ( { model | page = Home Home.init }, Cmd.none )
 
-            Just Route.Home ->
-                transition HomeLoaded (Home.init)
-
-            Just Route.About ->
-                transition AboutLoaded (About.init)
-
-
-getPage : PageState -> Page
-getPage pageState =
-    case pageState of
-        Loaded page ->
-            page
-
-        TransitioningFrom page ->
-            page
-
-
-pageError : Model -> ActivePage -> String -> ( Model, Cmd msg )
-pageError model activePage errorMessage =
-    let
-        error =
-            Error.pageLoadError activePage errorMessage
-    in
-        { model | pageState = Loaded (Error error) } => Cmd.none
+        Just Route.About ->
+            ( { model | page = About About.init }, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    updatePage (getPage model.pageState) msg model
+    updatePage model.page msg model
 
 
 updatePage : Page -> Msg -> Model -> ( Model, Cmd Msg )
@@ -99,27 +65,12 @@ updatePage page msg model =
                 ( newModel, newCmd ) =
                     subUpdate subMsg subModel
             in
-                ( { model | pageState = Loaded (toModel newModel) }, Cmd.map toMsg newCmd )
-
-        error =
-            pageError model
+                ( { model | page = (toModel newModel) }, Cmd.map toMsg newCmd )
     in
         case ( msg, page ) of
             -- Update for page transitions
             ( SetRoute route, _ ) ->
                 setRoute route model
-
-            ( HomeLoaded (Ok subModel), _ ) ->
-                { model | pageState = Loaded (Home subModel) } => Cmd.none
-
-            ( HomeLoaded (Err error), _ ) ->
-                { model | pageState = Loaded (Error error) } => Cmd.none
-
-            ( AboutLoaded (Ok subModel), _ ) ->
-                { model | pageState = Loaded (About subModel) } => Cmd.none
-
-            ( AboutLoaded (Err error), _ ) ->
-                { model | pageState = Loaded (Error error) } => Cmd.none
 
             -- Update for page specfic msgs
             ( HomeMsg subMsg, Home subModel ) ->
@@ -144,21 +95,11 @@ updatePage page msg model =
 
 view : Model -> Html Msg
 view model =
-    case model.pageState of
-        Loaded page ->
-            viewPage False page
-
-        TransitioningFrom page ->
-            viewPage True page
-
-
-viewPage : Bool -> Page -> Html Msg
-viewPage isLoading page =
     let
         layout =
-            Page.layout isLoading
+            Page.layout
     in
-        case page of
+        case model.page of
             NotFound ->
                 layout Page.Other NotFound.view
 
@@ -204,7 +145,7 @@ initialPage =
 init : Value -> Location -> ( Model, Cmd Msg )
 init val location =
     setRoute (Route.fromLocation location)
-        { pageState = Loaded initialPage
+        { page = initialPage
         }
 
 
