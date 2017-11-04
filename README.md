@@ -12,4 +12,4 @@ This is basically a trimmed down version of the Elm [Real World](https://github.
 
 **2.** Build and run:
 
-> elm-live --output=elm.js src/Main.elm --pushstate --open
+> elm-live --output=elm.js src/Main.elm --pushstate --open --debug
