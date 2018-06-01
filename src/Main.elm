@@ -1,13 +1,12 @@
 module Main exposing (..)
 
 import Html exposing (..)
-import Navigation exposing (Location)
 import Json.Decode as Decode exposing (Value)
-import Page.Error as Error exposing (PageLoadError)
-import Page.NotFound as NotFound
-import Page.Home as Home
+import Layout.Page as Page exposing (ActivePage)
+import Navigation exposing (Location)
 import Page.About as About
-import View.Page as Page exposing (ActivePage)
+import Page.Home as Home
+import Page.NotFound as NotFound
 import Route exposing (..)
 import Util exposing ((=>))
 
@@ -21,11 +20,9 @@ type alias Model =
 
 
 type Page
-    = Blank
-    | NotFound
-    | Error PageLoadError
-    | Home Home.Model
+    = Home Home.Model
     | About About.Model
+    | NotFound
 
 
 
@@ -65,28 +62,28 @@ updatePage page msg model =
                 ( newModel, newCmd ) =
                     subUpdate subMsg subModel
             in
-                ( { model | page = (toModel newModel) }, Cmd.map toMsg newCmd )
+            ( { model | page = toModel newModel }, Cmd.map toMsg newCmd )
     in
-        case ( msg, page ) of
-            -- Update for page transitions
-            ( SetRoute route, _ ) ->
-                setRoute route model
+    case ( msg, page ) of
+        -- Update for page transitions
+        ( SetRoute route, _ ) ->
+            setRoute route model
 
-            -- Update for page specfic msgs
-            ( HomeMsg subMsg, Home subModel ) ->
-                toPage Home HomeMsg (Home.update) subMsg subModel
+        -- Update for page specfic msgs
+        ( HomeMsg subMsg, Home subModel ) ->
+            toPage Home HomeMsg Home.update subMsg subModel
 
-            ( AboutMsg subMsg, About subModel ) ->
-                toPage About AboutMsg (About.update) subMsg subModel
+        ( AboutMsg subMsg, About subModel ) ->
+            toPage About AboutMsg About.update subMsg subModel
 
-            ( _, NotFound ) ->
-                -- Disregard incoming messages when we're on the
-                -- NotFound page.
-                model => Cmd.none
+        ( _, NotFound ) ->
+            -- Disregard incoming messages when we're on the
+            -- NotFound page.
+            model => Cmd.none
 
-            ( _, _ ) ->
-                -- Disregard incoming messages that arrived for the wrong page
-                model => Cmd.none
+        ( _, _ ) ->
+            -- Disregard incoming messages that arrived for the wrong page
+            model => Cmd.none
 
 
 
@@ -99,29 +96,19 @@ view model =
         layout =
             Page.layout
     in
-        case model.page of
-            NotFound ->
-                layout Page.Other NotFound.view
+    case model.page of
+        NotFound ->
+            layout Page.Other NotFound.view
 
-            Blank ->
-                -- This is for the very intial page load, while we are loading
-                -- data via HTTP. We could also render a spinner here.
-                Html.text ""
-                    |> layout Page.Other
+        Home subModel ->
+            Home.view subModel
+                |> layout Page.Home
+                |> Html.map HomeMsg
 
-            Error subModel ->
-                Error.view subModel
-                    |> layout Page.Other
-
-            Home subModel ->
-                Home.view subModel
-                    |> layout Page.Home
-                    |> Html.map HomeMsg
-
-            About subModel ->
-                About.view subModel
-                    |> layout Page.About
-                    |> Html.map AboutMsg
+        About subModel ->
+            About.view subModel
+                |> layout Page.About
+                |> Html.map AboutMsg
 
 
 
@@ -139,7 +126,7 @@ subscriptions model =
 
 initialPage : Page
 initialPage =
-    Blank
+    Home Home.init
 
 
 init : Value -> Location -> ( Model, Cmd Msg )

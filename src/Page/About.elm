@@ -1,6 +1,7 @@
-module Page.About exposing (view, update, Model, Msg, init)
+module Page.About exposing (Model, Msg, init, update, view)
 
 import Html exposing (..)
+import Model.Dummy exposing (Dummy)
 
 
 ---- MODEL ----
@@ -9,12 +10,16 @@ import Html exposing (..)
 type alias Model =
     { pageTitle : String
     , pageBody : String
+    , dummy : Dummy
     }
 
 
 init : Model
 init =
-    Model "About" "This is the aboutpage"
+    { pageTitle = "About"
+    , pageBody = "This is the aboutpage"
+    , dummy = Dummy "Dummy of a shared model"
+    }
 
 
 

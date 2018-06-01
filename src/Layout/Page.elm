@@ -1,4 +1,4 @@
-module View.Page exposing (ActivePage(..), layout)
+module Layout.Page exposing (ActivePage(..), layout)
 
 import Html exposing (..)
 import Route exposing (Route)
@@ -10,11 +10,10 @@ type ActivePage
     | About
 
 
-{-| Take a page's Html and layout it with a header and footer.
 
-isLoading can be used to slow loading during slow transitions
+-- Take a page's Html and layout it with a header and footer.
 
--}
+
 layout : ActivePage -> Html msg -> Html msg
 layout page content =
     div []
