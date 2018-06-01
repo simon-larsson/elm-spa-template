@@ -4,8 +4,16 @@ import Html exposing (..)
 import Json.Decode as Decode exposing (Value)
 import Layout.Page as Page exposing (ActivePage)
 import Navigation exposing (Location)
-import Page.About as About
-import Page.Home as Home
+import Page.About.Function as AboutFunction
+import Page.About.Message as AboutMessage
+import Page.About.Model as AboutModel
+import Page.About.Update as AboutUpdate
+import Page.About.View as AboutView
+import Page.Home.Function as HomeFunction
+import Page.Home.Message as HomeMessage
+import Page.Home.Model as HomeModel
+import Page.Home.Update as HomeUpdate
+import Page.Home.View as HomeView
 import Page.NotFound as NotFound
 import Route exposing (..)
 import Util exposing ((=>))
@@ -20,8 +28,8 @@ type alias Model =
 
 
 type Page
-    = Home Home.Model
-    | About About.Model
+    = Home HomeModel.Model
+    | About AboutModel.Model
     | NotFound
 
 
@@ -31,8 +39,8 @@ type Page
 
 type Msg
     = SetRoute (Maybe Route)
-    | HomeMsg Home.Msg
-    | AboutMsg About.Msg
+    | HomeMsg HomeMessage.Msg
+    | AboutMsg AboutMessage.Msg
 
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -43,10 +51,10 @@ setRoute route model =
             ( model, Cmd.none )
 
         Just Route.Home ->
-            ( { model | page = Home Home.init }, Cmd.none )
+            ( { model | page = Home HomeFunction.init }, Cmd.none )
 
         Just Route.About ->
-            ( { model | page = About About.init }, Cmd.none )
+            ( { model | page = About AboutFunction.init }, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -71,10 +79,10 @@ updatePage page msg model =
 
         -- Update for page specfic msgs
         ( HomeMsg subMsg, Home subModel ) ->
-            toPage Home HomeMsg Home.update subMsg subModel
+            toPage Home HomeMsg HomeUpdate.update subMsg subModel
 
         ( AboutMsg subMsg, About subModel ) ->
-            toPage About AboutMsg About.update subMsg subModel
+            toPage About AboutMsg AboutUpdate.update subMsg subModel
 
         ( _, NotFound ) ->
             -- Disregard incoming messages when we're on the
@@ -101,12 +109,12 @@ view model =
             layout Page.Other NotFound.view
 
         Home subModel ->
-            Home.view subModel
+            HomeView.view subModel
                 |> layout Page.Home
                 |> Html.map HomeMsg
 
         About subModel ->
-            About.view subModel
+            AboutView.view subModel
                 |> layout Page.About
                 |> Html.map AboutMsg
 
@@ -126,7 +134,7 @@ subscriptions model =
 
 initialPage : Page
 initialPage =
-    Home Home.init
+    Home HomeFunction.init
 
 
 init : Value -> Location -> ( Model, Cmd Msg )
